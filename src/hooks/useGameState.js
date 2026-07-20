@@ -57,14 +57,19 @@ export function useGameState(shopCritBonus = 0, shopClickBonus = 0) {
   }, []);
 
   // Offline earnings on mount
+  const offlineAppliedRef = useRef(false);
   useEffect(() => {
+    if (offlineAppliedRef.current) return;
+    offlineAppliedRef.current = true;
+    
     const lastTime = getLastSaveTime();
     if (lastTime) {
       const elapsed = (Date.now() - lastTime) / 1000;
-      if (elapsed > 5 && cps > 0) {
-        const offlineRatio = state.upgrades.cosmicTap.level * 0.1;
+      const currentCps = getEffectiveCPS(stateRef.current.upgrades);
+      if (elapsed > 5 && currentCps > 0) {
+        const offlineRatio = stateRef.current.upgrades.cosmicTap?.level * 0.1 || 0;
         if (offlineRatio > 0) {
-          const earned = cps * elapsed * offlineRatio;
+          const earned = currentCps * elapsed * offlineRatio;
           if (earned > 0) {
             setState(prev => ({
               ...prev,
@@ -85,7 +90,7 @@ export function useGameState(shopCritBonus = 0, shopClickBonus = 0) {
 
   // ---- Achievement helpers ----
   const isUnlocked = useCallback((id) => {
-    return state.unlockedAchievements.includes(id);
+    return state.unlockedAchievements?.includes(id) ?? false;
   }, [state.unlockedAchievements]);
 
   const unlockAchievementById = useCallback((id) => {
@@ -268,6 +273,8 @@ export function useGameState(shopCritBonus = 0, shopClickBonus = 0) {
       newAchievements: [],
     }));
     setNotification({ emoji: '↺', text: 'Progresso reiniciado!' });
+    // Reset offline flag so it recalculates after reset
+    offlineAppliedRef.current = false;
   }, []);
 
   // ---- Clear notifications ----
