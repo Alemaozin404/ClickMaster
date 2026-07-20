@@ -77,6 +77,45 @@
     <p style="color: rgba(255,255,255,0.3); font-size: 0.85rem; margin-top: 16px;">Carregando...</p>
   </div>
 
+  <!-- Inline script: esconde a splash screen assim que #root tiver conteúdo -->
+  <script>
+    (function() {
+      var splash = document.getElementById('splash-screen');
+      if (!splash) return;
+
+      function hideSplash() {
+        splash.style.opacity = '0';
+        setTimeout(function() {
+          splash.style.display = 'none';
+        }, 600);
+      }
+
+      // MutationObserver: detecta quando React renderiza em #root
+      var rootEl = document.getElementById('root');
+      if (rootEl) {
+        var observer = new MutationObserver(function() {
+          if (rootEl.children.length > 0) {
+            hideSplash();
+            observer.disconnect();
+          }
+        });
+        observer.observe(rootEl, { childList: true, subtree: true });
+
+        // Fallback: se #root já tiver conteúdo (ex: cache SW), esconde imediatamente
+        if (rootEl.children.length > 0) {
+          hideSplash();
+          observer.disconnect();
+        }
+      }
+
+      // Fallback: esconde após 5s mesmo que nada aconteça
+      setTimeout(hideSplash, 5000);
+
+      // Fallback: esconde no window.onload
+      window.addEventListener('load', hideSplash);
+    })();
+  </script>
+
   <noscript>
     <div style="
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
