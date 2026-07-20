@@ -14,7 +14,7 @@
 <meta name="author" content="ClickMaster">
 <meta name="robots" content="index, follow">
 
-<!-- PWA Manifest (usa %BASE_URL% que Vite substitui conforme o ambiente) -->
+<!-- PWA Manifest -->
 <link rel="manifest" href="%BASE_URL%manifest.webmanifest">
 
 <!-- iOS / Safari -->
@@ -47,49 +47,50 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 
-<!-- Theme color for PWA browser -->
 <meta name="color-scheme" content="dark light">
+
+<!-- Base styles: garantem que a pagina nunca fique branca -->
+<style>
+  html { background: #0f0c29; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    font-family: system-ui, sans-serif;
+  }
+  @keyframes splashPulse { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  @keyframes splashSpin { to { transform: rotate(360deg); } }
+</style>
 </head>
 <body>
-  <!-- Loading screen injected via inline styles -->
-  <div id="splash-screen" style="
-    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    font-family: 'Segoe UI', system-ui, sans-serif; z-index: 9999;
-    transition: opacity 0.6s ease;
-  ">
-    <div style="font-size: 4rem; margin-bottom: 16px; animation: splashPulse 1.5s ease-in-out infinite;">🪙</div>
-    <h1 style="
-      font-family: 'Fredoka One', 'Segoe UI', cursive;
-      font-size: 2.2rem;
-      background: linear-gradient(135deg, #f093fb, #f5576c, #ffd86f);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 12px;
-    ">ClickMaster</h1>
-    <div style="
-      width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1);
-      border-top-color: #f5576c; border-radius: 50%;
-      animation: splashSpin 0.8s linear infinite;
-    "></div>
-    <p style="color: rgba(255,255,255,0.3); font-size: 0.85rem; margin-top: 16px;">Carregando...</p>
+  <!-- Splash screen -->
+  <div id="splash-screen" style="position:fixed;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity 0.6s ease;">
+    <div style="font-size:4rem;margin-bottom:16px;animation:splashPulse 1.5s ease-in-out infinite;">🪙</div>
+    <h1 style="font-family:'Fredoka One','Segoe UI',cursive;font-size:2.2rem;background:linear-gradient(135deg,#f093fb,#f5576c,#ffd86f);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:12px;">ClickMaster</h1>
+    <div style="width:40px;height:40px;border:3px solid rgba(255,255,255,0.1);border-top-color:#f5576c;border-radius:50%;animation:splashSpin 0.8s linear infinite;"></div>
+    <p style="color:rgba(255,255,255,0.3);font-size:0.85rem;margin-top:16px;">Carregando...</p>
   </div>
 
-  <!-- Inline script: esconde a splash screen assim que #root tiver conteúdo -->
+  <noscript>
+    <div style="position:fixed;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);color:#fff;font-family:system-ui,sans-serif;z-index:99999;text-align:center;">
+      <div style="font-size:4rem;margin-bottom:16px;">⚠️</div>
+      <h1 style="font-size:1.6rem;margin-bottom:12px;">JavaScript está desativado</h1>
+      <p style="color:rgba(255,255,255,0.6);font-size:0.95rem;line-height:1.5;max-width:400px;">O ClickMaster precisa de JavaScript para funcionar. Por favor, ative o JavaScript no seu navegador e recarregue a página.</p>
+    </div>
+  </noscript>
+
+  <div id="root"></div>
+
+  <!-- Script inline: posicionado APÓS #root para encontra-lo no DOM -->
   <script>
     (function() {
       var splash = document.getElementById('splash-screen');
       if (!splash) return;
-
       function hideSplash() {
         splash.style.opacity = '0';
-        setTimeout(function() {
-          splash.style.display = 'none';
-        }, 600);
+        setTimeout(function() { splash.style.display = 'none'; }, 600);
       }
-
       // MutationObserver: detecta quando React renderiza em #root
       var rootEl = document.getElementById('root');
       if (rootEl) {
@@ -100,51 +101,16 @@
           }
         });
         observer.observe(rootEl, { childList: true, subtree: true });
-
-        // Fallback: se #root já tiver conteúdo (ex: cache SW), esconde imediatamente
         if (rootEl.children.length > 0) {
           hideSplash();
           observer.disconnect();
         }
       }
-
-      // Fallback: esconde após 5s mesmo que nada aconteça
-      setTimeout(hideSplash, 5000);
-
-      // Fallback: esconde no window.onload
+      setTimeout(hideSplash, 4000);
       window.addEventListener('load', hideSplash);
     })();
   </script>
 
-  <noscript>
-    <div style="
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 24px; font-family: system-ui, sans-serif; z-index: 99999;
-    ">
-      <div style="font-size: 4rem; margin-bottom: 16px;">⚠️</div>
-      <h1 style="color: #fff; font-size: 1.6rem; margin-bottom: 12px; text-align: center;">
-        JavaScript está desativado
-      </h1>
-      <p style="color: rgba(255,255,255,0.6); font-size: 0.95rem; text-align: center; max-width: 400px; line-height: 1.5;">
-        O ClickMaster precisa de JavaScript para funcionar.
-        Por favor, ative o JavaScript no seu navegador e recarregue a página.
-      </p>
-    </div>
-  </noscript>
-
-  <div id="root"></div>
   <script type="module" src="/src/main.jsx"></script>
-
-  <style>
-    @keyframes splashPulse {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-8px); }
-    }
-    @keyframes splashSpin {
-      to { transform: rotate(360deg); }
-    }
-  </style>
 </body>
 </html>
