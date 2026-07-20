@@ -4,11 +4,13 @@ import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary'
 import './App.css'
 
-// ---- PWA Service Worker Registration ----
-if ('serviceWorker' in navigator) {
+// ---- PWA Service Worker Registration (apenas em produção) ----
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  const baseUrl = import.meta.env.BASE_URL || '/';
+  
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/ClickMaster/sw.js', {
-      scope: '/ClickMaster/',
+    navigator.serviceWorker.register(`${baseUrl}sw.js`, {
+      scope: baseUrl,
     }).then((reg) => {
       console.log('[PWA] Service Worker registrado com escopo:', reg.scope);
 
