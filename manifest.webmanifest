@@ -1,0 +1,39 @@
+{
+  "name": "ClickMaster - Jogo de Clicker",
+  "short_name": "ClickMaster",
+  "description": "Um viciante jogo de clicker com conquistas, upgrades e muito mais! Clique para ganhar moedas e evoluir.",
+  "start_url": "/ClickMaster/",
+  "scope": "/ClickMaster/",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "theme_color": "#0f0c29",
+  "background_color": "#0f0c29",
+  "categories": ["games", "entertainment"],
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/ClickMaster/icons/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/ClickMaster/icons/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Jogar Agora",
+      "short_name": "Jogar",
+      "description": "Iniciar o jogo rapidamente",
+      "url": "/ClickMaster/"
+    }
+  ]
+}
