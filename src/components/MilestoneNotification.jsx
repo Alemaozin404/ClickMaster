@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, memo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { formatNumber } from '../utils/gameLogic';
 
-export default function MilestoneNotification({ value, onClear }) {
+const MilestoneNotification = memo(function MilestoneNotification({ value, onClear }) {
   useEffect(() => {
     if (value === null) return;
     const timer = setTimeout(() => {
@@ -28,4 +28,6 @@ export default function MilestoneNotification({ value, onClear }) {
       )}
     </AnimatePresence>
   );
-}
+});
+
+export default MilestoneNotification;

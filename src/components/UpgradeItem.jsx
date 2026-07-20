@@ -1,6 +1,7 @@
+import { memo } from 'react';
 import { formatNumber } from '../utils/gameLogic';
 
-export default function UpgradeItem({ def, upg, score, onBuy }) {
+const UpgradeItem = memo(function UpgradeItem({ def, upg, score, onBuy }) {
   const cost = def.getCost(upg.level);
   const canBuy = score >= cost;
 
@@ -35,4 +36,6 @@ export default function UpgradeItem({ def, upg, score, onBuy }) {
       </div>
     </div>
   );
-}
+});
+
+export default UpgradeItem;

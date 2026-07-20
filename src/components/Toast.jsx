@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 
 const TYPE_STYLES = {
@@ -11,7 +12,7 @@ const TYPE_STYLES = {
   shop: { bg: 'rgba(0, 184, 148, 0.12)', border: 'rgba(0, 184, 148, 0.3)', shadow: 'rgba(0, 184, 148, 0.2)' },
 };
 
-export default function Toast({ toast, onRemove, index }) {
+const Toast = memo(function Toast({ toast, onRemove, index }) {
   const typeStyle = TYPE_STYLES[toast.type] || TYPE_STYLES.info;
   const offset = index * 8;
 
@@ -41,4 +42,6 @@ export default function Toast({ toast, onRemove, index }) {
       </button>
     </motion.div>
   );
-}
+});
+
+export default Toast;

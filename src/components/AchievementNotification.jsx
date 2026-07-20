@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, memo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
-export default function AchievementNotification({ achievement, onClear }) {
+const AchievementNotification = memo(function AchievementNotification({ achievement, onClear }) {
   useEffect(() => {
     if (!achievement) return;
     const timer = setTimeout(() => {
@@ -30,4 +30,6 @@ export default function AchievementNotification({ achievement, onClear }) {
       )}
     </AnimatePresence>
   );
-}
+});
+
+export default AchievementNotification;

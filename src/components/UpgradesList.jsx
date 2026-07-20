@@ -1,7 +1,8 @@
+import { memo } from 'react';
 import { UPGRADE_DEFS } from '../utils/gameLogic';
 import UpgradeItem from './UpgradeItem';
 
-export default function UpgradesList({ upgrades, score, onBuy }) {
+const UpgradesList = memo(function UpgradesList({ upgrades, score, onBuy }) {
   return (
     <div className="upgrades-section">
       <div className="section-title">
@@ -20,4 +21,6 @@ export default function UpgradesList({ upgrades, score, onBuy }) {
       </div>
     </div>
   );
-}
+});
+
+export default UpgradesList;

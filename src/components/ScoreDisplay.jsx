@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, memo } from 'react';
 import { formatNumber } from '../utils/gameLogic';
 
-export default function ScoreDisplay({ score, cps, scorePop, onPopEnd }) {
+const ScoreDisplay = memo(function ScoreDisplay({ score, cps, scorePop, onPopEnd }) {
   const [pop, setPop] = useState(false);
   const prevScore = useRef(score);
 
@@ -32,4 +32,6 @@ export default function ScoreDisplay({ score, cps, scorePop, onPopEnd }) {
       </div>
     </div>
   );
-}
+});
+
+export default ScoreDisplay;

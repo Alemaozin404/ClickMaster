@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useGameState } from './hooks/useGameState';
 import { useAutoLoop } from './hooks/useAutoLoop';
@@ -20,6 +20,37 @@ import ShopPanel from './components/ShopPanel';
 import ParticleCanvas from './components/ParticleCanvas';
 import Footer from './components/Footer';
 import ToastContainer from './components/ToastContainer';
+
+// ---- Fullscreen API utility ----
+function toggleFullscreen() {
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    const el = document.documentElement;
+    if (el.requestFullscreen) {
+      el.requestFullscreen().catch(() => {});
+    } else if (el.webkitRequestFullscreen) {
+      el.webkitRequestFullscreen();
+    }
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen().catch(() => {});
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
+  }
+}
+
+// ---- Prevent default touch behaviors ----
+function preventTouchDefault(e) {
+  if (e.cancelable) e.preventDefault();
+}
+
+const PARTICLE_COLORS = {
+  gold: 'rgba(255,215,0,1)',
+  fire: 'rgba(255,100,0,1)',
+  ice: 'rgba(100,200,255,1)',
+  neon: 'rgba(200,0,255,1)',
+  rainbow: null,
+};
 
 export default function App() {
   // Theme
@@ -105,6 +136,35 @@ export default function App() {
     playPrestige,
   } = useSound();
 
+  // ---- Orientation State ----
+  const [isLandscape, setIsLandscape] = useState(() => {
+    try {
+      return window.matchMedia('(orientation: landscape)').matches;
+    } catch { return false; }
+  });
+
+  useEffect(() => {
+    try {
+      const mq = window.matchMedia('(orientation: landscape)');
+      const handler = (e) => setIsLandscape(e.matches);
+      mq.addEventListener('change', handler);
+      return () => mq.removeEventListener('change', handler);
+    } catch { return undefined; }
+  }, []);
+
+  // ---- Fullscreen State ----
+  const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', handler);
+    document.addEventListener('webkitfullscreenchange', handler);
+    return () => {
+      document.removeEventListener('fullscreenchange', handler);
+      document.removeEventListener('webkitfullscreenchange', handler);
+    };
+  }, []);
+
   // Play milestone sound
   useEffect(() => {
     if (milestone !== null) {
@@ -122,7 +182,7 @@ export default function App() {
   // Auto loop
   useAutoLoop(state.upgrades, addAutoEarnings);
 
-  // Floating numbers (kept alongside canvas particles)
+  // Floating numbers
   const [floaters, setFloaters] = useState([]);
   const clickAreaRef = useRef(null);
   const floatIdRef = useRef(0);
@@ -142,15 +202,6 @@ export default function App() {
     }, 1200);
   }, []);
 
-  // Shop effects configuration
-  const PARTICLE_COLORS = {
-    gold: 'rgba(255,215,0,1)',
-    fire: 'rgba(255,100,0,1)',
-    ice: 'rgba(100,200,255,1)',
-    neon: 'rgba(200,0,255,1)',
-    rainbow: null,
-  };
-
   // Particle system
   const particleRef = useRef(null);
 
@@ -165,7 +216,9 @@ export default function App() {
     return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
   }, []);
 
-  // Wrapped handle click
+  // ---- Click handler with touch support ----
+  const [isPressed, setIsPressed] = useState(false);
+
   const onMainClick = useCallback((event) => {
     let clickValue = clickPower;
     let isCrit = false;
@@ -192,7 +245,6 @@ export default function App() {
       if (isCrit) {
         particleRef.current.spawnCrit(pos.x, pos.y);
       } else {
-        // Apply shop color if equipped
         let clickColor = '#4fc3f7';
         if (activeEffects.color) {
           const shopColor = PARTICLE_COLORS[activeEffects.color];
@@ -206,6 +258,11 @@ export default function App() {
       }
     }
   }, [clickPower, luckyChance, handleClick, spawnFloatingNumber, getParticlePos, playClick, playCrit, activeEffects]);
+
+  // Prevent context menu on long press
+  const handleContextMenu = useCallback((e) => {
+    e.preventDefault();
+  }, []);
 
   // Particle effects for game events
   useEffect(() => {
@@ -287,10 +344,30 @@ export default function App() {
   }, [doReset]);
 
   // Unlocked count
-  const unlockedCount = ACHIEVEMENT_DEFS.filter(a => isUnlocked(a.id)).length;
+  const unlockedCount = useMemo(() =>
+    ACHIEVEMENT_DEFS.filter(a => isUnlocked(a.id)).length,
+  [isUnlocked]);
+
+  // Rainbow mode optimization
+  const rainbowClass = useMemo(() =>
+    activeEffects.rainbowMode ? ' rainbow-mode' : '',
+  [activeEffects.rainbowMode]);
 
   return (
-    <div className={`game-container${activeEffects.rainbowMode ? ' rainbow-mode' : ''}`}>
+    <div className={`game-container${rainbowClass}${isLandscape ? ' landscape' : ''}`}>
+      {/* Fullscreen button (mobile) */}
+      {!isFullscreen && (
+        <button
+          className="fullscreen-btn"
+          onClick={toggleFullscreen}
+          onPointerDown={(e) => e.preventDefault()}
+          aria-label="Tela cheia"
+          title="Tela cheia"
+        >
+          ⛶
+        </button>
+      )}
+
       {/* Particle canvas */}
       <ParticleCanvas onReady={onParticleReady} />
 
@@ -304,10 +381,17 @@ export default function App() {
 
         <ProgressBar totalEarned={state.totalEarned} />
 
-        <div className="click-area" ref={clickAreaRef}>
+        <div
+          className="click-area"
+          ref={clickAreaRef}
+          onContextMenu={handleContextMenu}
+        >
           <button
-            className="click-btn"
+            className={`click-btn${isPressed ? ' click-btn--pressed' : ''}`}
             onClick={onMainClick}
+            onPointerDown={() => setIsPressed(true)}
+            onPointerUp={() => setIsPressed(false)}
+            onPointerLeave={() => setIsPressed(false)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
@@ -350,7 +434,6 @@ export default function App() {
           onBuy={(id) => {
             const prevScore = state.score;
             buyUpgrade(id);
-            // Play upgrade sound + particles if player could afford it
             const def = UPGRADE_DEFS.find(d => d.id === id);
             if (def) {
               const cost = def.getCost(state.upgrades[id].level);

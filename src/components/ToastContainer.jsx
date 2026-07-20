@@ -1,7 +1,8 @@
+import { memo } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import Toast from './Toast';
 
-export default function ToastContainer({ toasts, onRemove }) {
+const ToastContainer = memo(function ToastContainer({ toasts, onRemove }) {
   if (!toasts || toasts.length === 0) return null;
 
   return (
@@ -18,4 +19,6 @@ export default function ToastContainer({ toasts, onRemove }) {
       </AnimatePresence>
     </div>
   );
-}
+});
+
+export default ToastContainer;

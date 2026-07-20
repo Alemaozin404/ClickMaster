@@ -1,6 +1,6 @@
-import { useRef } from 'react';
+import { useRef, memo } from 'react';
 
-export default function Footer({
+const Footer = memo(function Footer({
   theme,
   themeIcon,
   themeLabel,
@@ -105,4 +105,6 @@ export default function Footer({
       </div>
     </>
   );
-}
+});
+
+export default Footer;

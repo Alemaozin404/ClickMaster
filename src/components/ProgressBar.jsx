@@ -1,4 +1,6 @@
-export default function ProgressBar({ totalEarned }) {
+import { memo } from 'react';
+
+const ProgressBar = memo(function ProgressBar({ totalEarned }) {
   let width = '0%';
   if (totalEarned > 0) {
     const magnitude = Math.pow(10, Math.floor(Math.log10(totalEarned)));
@@ -11,4 +13,6 @@ export default function ProgressBar({ totalEarned }) {
       <div className="progress-bar" style={{ width }}></div>
     </div>
   );
-}
+});
+
+export default ProgressBar;
