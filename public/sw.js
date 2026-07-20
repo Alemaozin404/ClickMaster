@@ -1,10 +1,10 @@
 /* ============================================
-   ClickMaster - Service Worker v1.0
+   ClickMaster - Service Worker v2.0
    Cache-first for static assets
    Network-first for dynamic content
    ============================================ */
 
-const CACHE_NAME = 'clickmaster-v1';
+const CACHE_NAME = 'clickmaster-v2';
 const STATIC_ASSETS = [
   '/ClickMaster/',
   '/ClickMaster/index.html',

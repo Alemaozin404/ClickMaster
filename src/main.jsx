@@ -12,23 +12,41 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
     navigator.serviceWorker.register(`${baseUrl}sw.js`, {
       scope: baseUrl,
     }).then((reg) => {
-      console.log('[PWA] Service Worker registrado com escopo:', reg.scope);
+      console.log('[PWA] Service Worker registrado:', reg.scope);
+
+      // Se ja existe um SW em espera (nova versao), ativa imediatamente
+      if (reg.waiting) {
+        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+
+      // Detecta quando uma nova versao do SW e encontrada
       reg.addEventListener('updatefound', () => {
         const newWorker = reg.installing;
+        if (!newWorker) return;
+
         newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            console.log('[PWA] Nova versão disponível!');
+          if (newWorker.state === 'installed') {
+            if (navigator.serviceWorker.controller) {
+              // Nova versao baixada — ativa imediatamente
+              console.log('[PWA] Nova versao disponivel! Ativando...');
+              newWorker.postMessage({ type: 'SKIP_WAITING' });
+            } else {
+              // Primeira instalacao do SW
+              console.log('[PWA] SW instalado pela primeira vez');
+            }
           }
         });
       });
     }).catch((err) => {
-      console.warn('[PWA] Erro ao registrar Service Worker:', err);
+      console.warn('[PWA] Erro ao registrar SW:', err);
     });
 
+    // Recarrega a pagina quando o SW assume o controle
     let refreshing = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (refreshing) return;
       refreshing = true;
+      console.log('[PWA] Nova versao ativada! Recarregando...');
       window.location.reload();
     });
   });
